@@ -1,0 +1,21 @@
+Interaction with Mobile OS Market Share Visulation
+
+Interactions:
+
+1. Click one of the circles and it will be highlighted with a black stroke while the rest of circles will be faded out.
+
+2. All circles can be click on one at time.
+
+3. Each Circle that you click on will display a toast message that will have the market share and OS system on it. 
+
+4. Hover the mouse icon inside one the circles and toast message will come up.
+
+5. Each toast message matches it color to its circle.
+
+6. Both, 2011, and 2010 rectangle shapes on the bottom are buttons to click on to update the circles radius by that year.
+
+7. If you click on the white background it will reset the circles to it beginning state.
+
+8. There are many transitions in this visulzation and animation so enjoy!!!
+
+9. This was done in HTML,CSS,JavaScript,D3,Jquery, and I added a open source library.

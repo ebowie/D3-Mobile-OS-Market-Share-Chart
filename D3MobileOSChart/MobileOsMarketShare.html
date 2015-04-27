@@ -1,0 +1,811 @@
+<!--
+Author: Eric Bowers
+Date:3/8/2015
+Section: ITCS 4121
+
+Description: This html page is a visulzation page that will aloud you to interact with a Circle graph.
+-->
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- This uses the D3 Library  -->
+ <script type="text/javascript" src="http://mbostock.github.com/d3/d3.js" ></script>
+ <!-- This uses the toastr style  -->
+<link rel="stylesheet" type="text/css" href="toastr.css">
+<!--  This uses the jQuery library   -->
+<script type="text/javascript" src="jquery-1.11.2.js"></script>
+<!-- This uses the toastr library/existing code  -->
+<script type="text/javascript" src="toastr.js"></script>
+<script type="text/javascript">
+// using jQuery to  change the color of the background
+$(document).ready(function() {
+    $('.toast-success').css('background-color', '#848484');
+});
+
+
+
+
+</script>
+<!-- change the the position of circles   -->
+<style type="text/css">
+#bubblegraph {
+  position: absolute;
+  
+}
+
+
+</style>
+</head>
+<body>
+	<div id = "bubblegraph">
+   <!-- This give me the canvas that will let me code D3 inside of it --> 
+ <svg width ="1265" height = "500">
+
+  <!-- Creating D3 shapes that are position all over the canvas.  
+      Each Circle that is created has it own id so it can be edited later.
+
+   -->
+  <rect   id = "backgroundClick" width="1265" height ="500" style="fill:white" stroke = "black"/>
+  <circle id = "iosCircle" cx = "150" cy="200" ></circle> 
+  <circle id = "andCircle" cx = "530" cy="200" ></circle>
+  <circle id = "symCircle"  cx = "355" cy = "200"></circle>
+  <circle id = "berryCircle" cx = "680" cy = "200"></circle>
+  <circle id =  "sonyCircle" cx = "800" cy = "200"></circle>
+  <circle id =  "samCircle" cx = "900" cy="200"></circle>
+  <circle id =  "unkCircle" cx = "1000" cy= "200"></circle>
+  <circle id =  "othCircle" cx = "1100" cy= "200"></circle>
+  <circle id =  "playCircle" cx = "1200" cy="200"></circle>
+
+<!-- creating D3 text to go with the D3 shapes 
+    Each D3 Text has it own id so it can be edited later.
+    ALL text are filled white as default.
+   -->
+  <text id = "iosText" x = "135"  y ="200" fill="white">IOS</text>
+  <text id = "andText" x = "500"  y ="200" fill="white">Android</text>
+  <text id = "symText" x = "335"  y ="200" fill="white">Sym</text>
+  <text id = "berryText" x= "645" y = "200" fill="white">BlackBerry</text>
+  <text id = "sonyText" x="780" y = "200" fill = "white">Sony</text>
+  <text id = "samText" x="870" y="200" fill = "white">Samsung</text>
+  <text id = "unkText"  x="970" y = "200" fill = "white">Unknown</text>
+  <text id = "othText"  x="1081" y= "200" fill = "white">Other</text>
+  <text id = "playText" x = "1185" y="200" fill = "white">Play</text>
+  <!-- This is the title to the page -->
+  <text id = "title" x="450" y ="50" fill = "Black" font-size="36">Mobile OS Market Share</text>
+  <!-- This is a important message for the grader -->
+  <text id = "message" x = "300" y="450" fill ="Red" font-size ="24">Please read my Directions.txt to get full interaction with this visualization!!!</text>
+   </svg>
+   
+   <!-- This divider is for the three buttons-->
+   <div id='buttons'></div>
+ <script type="text/javascript">
+ ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//section 1 enter the data
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*This is existing code that i use for the to display the toast messages
+ IT will aloud me to not have duplicate toasts
+ it will also give me close button area on the toast.
+*/
+toastr.options.closeButton = true;
+toastr.options.preventDuplicates =true;
+
+
+//This data is for the both button that will insert throught circles and toast messages.
+ var data =[{radius: 53.317, OS:"IOS"},
+            {radius: 11.580, OS:"Android"},
+            {radius: 15.098, OS:"Symbian"},
+            {radius: 5.8290, OS:"BlackBerry"},
+            {radius: 3.0110, OS:"Sony Ericsson"},
+            {radius: 2.5230, OS:"Samsung"},
+            {radius: 2.0840, OS:"Unknown"},
+            {radius: 1.2890, OS:"Other"},
+            {radius: 1.2370, OS:"Playstation"}];
+
+//This data is for the 2011 button that will insert throught circles and toast messages.
+  var data2 = [{radius: 6.5120, OS:"IOS"},
+            {radius: 2.2200, OS:"Android"},
+            {radius: 1.5430, OS:"Symbian"},
+            {radius: .7060, OS:"BlackBerry"},
+            {radius: .2780, OS:"Sony Ericsson"},
+            {radius: .3310, OS:"Samsung"},
+            {radius: .1010, OS:"Unknown"},
+            {radius: .2010, OS:"Other"},
+            {radius: .1040, OS:"Playstation"}];
+
+//This data is for the 2010 button that will insert throught circles and toast messages.
+  var data3 = [{radius: 48.6850, OS:"IOS"},
+            {radius: 9.3600, OS:"Android"},
+            {radius: 13.5550, OS:"Symbian"},
+            {radius: 5.1240, OS:"BlackBerry"},
+            {radius: 2.7330, OS:"Sony Ericsson"},
+            {radius: 2.1920, OS:"Samsung"},
+            {radius: 1.9830, OS:"Unknown"},
+            {radius: 1.0880, OS:"Other"},
+            {radius: 1.1340, OS:"Playstation"}];
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//sections 2 creating the three buttons and updating the circles
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//Gives me access on which data i need.
+  var dataArray = [data, data2, data3];
+
+//This is the button name data. 
+  var buttonData = ["Both","2011","2010"];
+
+//This is the default setting which is set to show both button when refreshed.
+  var activeData = dataArray[0];
+
+//This makes d3 canvas for the d3 buttons 
+  var buttonDiv = d3.select('#buttons').append('svg')
+      .attr('width', 1250)
+      .attr('height', 100);
+
+//This intializes the buttons to be able to be clicked on and to be edited.
+
+  var buttons = buttonDiv.selectAll('.updateButton')
+    .data(buttonData)
+    .enter()
+    .append('g')
+    .attr('class', 'updateButton')
+    .on('click', function(d, i) {
+      activeData = dataArray[i];
+
+      // when one of the buttons are clicked on, it goes through all these functions.
+      updateIOS(activeData);
+      updateAnd(activeData);
+      updateSym(activeData);
+      updateBerry(activeData);
+      updateSam(activeData);
+      updateSony(activeData);
+      updateOth(activeData);
+      updateUnk(activeData);
+      updatePlay(activeData);
+
+      /* This if statement is design for the circle text for when if the 2011 button was clicked 
+        the circle text would transition down and turn from white to black to show how small the circles get
+        and can tell which circle is what, vice-versa.
+
+        */
+      if(i == 1){
+          d3.select("#iosText").transition().duration(1000).attr("x", 135).attr("y", 250).attr("fill","black");
+          d3.select("#andText").transition().duration(1000).attr("x", 500).attr("y", 250).attr("fill","black");
+          d3.select("#symText").transition().duration(1000).attr("x", 335).attr("y", 250).attr("fill","black");
+          d3.select("#berryText").transition().duration(1000).attr("x", 645).attr("y", 250).attr("fill","black");
+          d3.select("#sonyText").transition().duration(1000).attr("x", 780).attr("y", 250).attr("fill","black");
+          d3.select("#samText").transition().duration(1000).attr("x", 870).attr("y", 250).attr("fill","black");
+          d3.select("#unkText").transition().duration(1000).attr("x", 970).attr("y", 250).attr("fill","black");
+          d3.select("#othText").transition().duration(1000).attr("x", 1081).attr("y", 250).attr("fill","black");
+          d3.select("#playText").transition().duration(1000).attr("x", 1185).attr("y", 250).attr("fill","black");
+      }
+      else{
+       
+        d3.select("#iosText").transition().duration(1000).attr("x", 135).attr("y", 200).attr("fill","white");
+          d3.select("#andText").transition().duration(1000).attr("x", 500).attr("y", 200).attr("fill","white");
+          d3.select("#symText").transition().duration(1000).attr("x", 335).attr("y", 200).attr("fill","white");
+          d3.select("#berryText").transition().duration(1000).attr("x", 645).attr("y", 200).attr("fill","white");
+          d3.select("#sonyText").transition().duration(1000).attr("x", 780).attr("y", 200).attr("fill","white");
+          d3.select("#samText").transition().duration(1000).attr("x", 870).attr("y", 200).attr("fill","white");
+          d3.select("#unkText").transition().duration(1000).attr("x", 970).attr("y", 200).attr("fill","white");
+          d3.select("#othText").transition().duration(1000).attr("x", 1081).attr("y", 200).attr("fill","white");
+          d3.select("#playText").transition().duration(1000).attr("x", 1185).attr("y", 200).attr("fill","white");
+      }
+      
+  });
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// section 3 displaying the three buttons 
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// this create rectangle that looks like a button.
+  buttons
+      .append("rect")
+      .attr("x", function(d, i) { return (i * 250) + 300; })
+      .attr("y", 50)
+    .attr("width", 200)
+    .attr("height", 50)
+    .attr("ry", 5)
+    .style("stroke", "#000000")
+    .style("fill", "#848484");
+
+//this create the text that will be put on the button.
+  buttons
+    .append("text")
+    .attr("x", function(d, i) { return (i * 250) + (100 / 2) + 350; }) 
+        .attr("y", 70)
+    .attr("dy", "0.35em")
+    .style("text-anchor", "middle")
+    .style("font-size", "15px")
+    .text(function(d) { return d; });
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//section 4 creating the circles variable and data.
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// These circle variables are being intialized
+ var IOSCircle = d3.select("#iosCircle");
+ var ANDCircle = d3.select("#andCircle");
+ var SYMCircle = d3.select("#symCircle");
+ var BERRYCircle = d3.select("#berryCircle");
+ var SONYCircle = d3.select("#sonyCircle");
+ var SAMCircle = d3.select("#samCircle");
+ var UNKCircle = d3.select("#unkCircle");
+ var OTHCircle = d3.select("#othCircle");
+ var PLAYCircle = d3.select("#playCircle");
+ var circleReset = d3.select("#backgroundClick");
+
+//These are the circles radius data to be updated.
+ var dataIOS;
+ var dataSym;
+ var dataAnd;
+ var dataSony;
+ var dataSam;
+ var dataBerry;
+ var dataOth;
+ var dataUnk;
+ var dataPlay;
+
+
+ ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//section 5 Updateing the circles radius and color
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+ /*
+  This function update the IOS circle radius.
+  IT also checks for clicks and movuse over and mouse out to go to different functions.
+
+ */
+  updateIOS(activeData);
+function updateIOS(data) {
+  dataIOS = data[0].radius;
+   IOSCircle.transition().duration(1000).attr("r", data[0].radius*2.0);
+ }
+   IOSCircle.attr("fill", "gray");
+   IOSCircle.on("click", IOS );
+   IOSCircle.on("mouseover", iosMouse);
+   IOSCircle.on("mouseout", MouseOut);
+
+
+/*
+  This function update the Android circle radius.
+  IT also checks for clicks and movuse over and mouse out to go to different functions.
+
+ */
+   updateAnd(activeData);
+function updateAnd(data) {
+  dataAnd = data[1].radius;
+   ANDCircle.transition().duration(1000).attr("r", data[1].radius*6.7);
+ }
+	 ANDCircle.attr("fill", "green");
+	 ANDCircle.on("click", Android);
+   ANDCircle.on("mouseover", andMouse);
+   ANDCircle.on("mouseout", MouseOut);
+
+/*
+  This function update the  Symbian  circle radius.
+  IT also checks for clicks and movuse over and mouse out to go to different functions.
+
+ */
+   updateSym(activeData);
+function updateSym(data){
+  dataSym = data[2].radius;
+   SYMCircle.transition().duration(1000).attr("r", data[2].radius*5.7);
+ }
+   SYMCircle.attr("fill", "orange");
+   SYMCircle.on("click", Symbian);
+   SYMCircle.on("mouseover", symMouse);
+   SYMCircle.on("mouseout", MouseOut);
+
+
+/*
+  This function update the BlackBerry circle radius.
+  IT also checks for clicks and movuse over and mouse out to go to different functions.
+
+ */
+    updateBerry(activeData);
+function updateBerry(data){
+  dataBerry = data[3].radius;
+   BERRYCircle.transition().duration(1000).attr("r", data[3].radius *10.5);
+ }
+   BERRYCircle.attr("fill", "black");
+   BERRYCircle.on("click", BlackBerry);
+   BERRYCircle.on("mouseover", blackMouse);
+   BERRYCircle.on("mouseout", MouseOut);
+
+
+/*
+  This function update the Sony circle radius.
+  IT also checks for clicks and movuse over and mouse out to go to different functions.
+
+ */
+   updateSony(activeData);
+function updateSony(data){
+  dataSony = data[4].radius;
+   SONYCircle.transition().duration(1000).attr("r", data[4].radius *14.5);
+ }
+   SONYCircle.attr("fill", "purple");
+   SONYCircle.on("click", Sony);
+   SONYCircle.on("mouseover",sonyMouse);
+   SONYCircle.on("mouseout", MouseOut);
+
+
+
+/*
+  This function update the Samsung circle radius.
+  IT also checks for clicks and movuse over and mouse out to go to different functions.
+
+ */
+    updateSam(activeData);
+function updateSam(data) {
+  dataSam = data[5].radius;
+   SAMCircle.transition().duration(1000).attr("r", data[5].radius *15.5);
+ }
+   SAMCircle.attr("fill", "#FF00FF");
+   SAMCircle.on("click", Samsung);
+   SAMCircle.on("mouseover", samMouse);
+   SAMCircle.on("mouseout", MouseOut);
+
+
+/*
+  This function update the Unknown circle radius.
+  IT also checks for clicks and movuse over and mouse out to go to different functions.
+
+ */
+    updateUnk(activeData);
+function updateUnk(data){
+  dataUnk = data[6].radius;
+   UNKCircle.transition().duration(1000).attr("r", data[6].radius *15.5);
+ }
+   UNKCircle.attr("fill", "red");
+   UNKCircle.on("click", Unknown);
+   UNKCircle.on("mouseover",unkMouse);
+   UNKCircle.on("mouseout",MouseOut);
+
+
+/*
+  This function update the Other circle radius.
+  IT also checks for clicks and movuse over and mouse out to go to different functions.
+
+ */
+    updateOth(activeData);
+function updateOth(data) {
+  dataOth = data[7].radius;
+   OTHCircle.transition().duration(1000).attr("r", data[7].radius*15.5);
+ }
+   OTHCircle.attr("fill", "brown");
+   OTHCircle.on("click", other);
+   OTHCircle.on("mouseover", othMouse);
+   OTHCircle.on("mouseout", MouseOut);
+
+
+/*
+  This function update the PlayStation circle radius.
+  IT also checks for clicks and movuse over and mouse out to go to different functions.
+
+ */
+    updatePlay(activeData);
+function updatePlay(data){
+  dataPlay = data[8].radius;
+   PLAYCircle.transition().duration(1000).attr("r", data[8].radius*15.5);
+ }
+   PLAYCircle.attr("fill", "blue");
+   PLAYCircle.on("click", PlayStation);
+   PLAYCircle.on("mouseover",playMouse);
+   PLAYCircle.on("mouseout",MouseOut);
+
+/*
+  This function will reset the circles to it nornal state with no highlighting and no fade.
+
+ */
+   circleReset.on("click", ResetCircles);
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//section 6 Mouse hovering toast message
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+
+    /*
+     This function usings existing code that i have edited and use differently in my own way.
+
+     remove(): remove and previous toasts that are displayed
+     position: is function that position toast message to a specfic circle.
+     setTimeout: will display toast as long as your not touching another circle.
+     toartr.function(): will display the circles specfic toast message for that circle.
+
+    */
+    function iosMouse(){
+      toastr.remove();
+          toastr.options.positionClass = 'toast-position-IOS';
+      time=setTimeout(function ( ){
+      toastr.IOS('Market Share: '+(dataIOS*100).toPrecision(5)+'%', 'OS: '+ data[0].OS);
+      },2000);
+    }
+    
+
+    /*
+     This function uses existing code that i have edited and use differently in my own way.
+
+     remove(): remove and previous toasts that are displayed
+     position: is a function that position toast message to a specfic circle.
+     setTimeout: will display toast as long as your not touching another circle.
+     toartr.function(): will display the circles specfic toast message for that circle.
+
+    */
+    function andMouse(){
+       toastr.remove();
+      toastr.options.positionClass = 'toast-position-Android';
+      time=setTimeout(function ( ){
+      toastr.Android('Market Share: '+(dataAnd*100).toPrecision(5)+'%', 'OS: '+ data[1].OS);
+      },2000);
+    }
+    
+
+    /*
+     This function uses existing code that i have edited and use differently in my own way.
+
+     remove(): remove and previous toasts that are displayed
+     position: is function that position toast message to a specfic circle.
+     setTimeout: will display toast as long as your not touching another circle.
+     toartr.function(): will display the circles specfic toast message for that circle.
+
+    */
+    function symMouse(){
+      toastr.remove();
+     toastr.options.positionClass = 'toast-position-Symbian';
+      time=setTimeout(function ( ){
+      toastr.Symbian('Market Share: '+(dataSym*100).toPrecision(5)+'%', 'OS: '+ data[2].OS);
+      },2000);
+    }
+
+
+/*
+     This function uses existing code that i have edited and use differently in my own way.
+
+     remove(): remove and previous toasts that are displayed
+     position: is function that position toast message to a specfic circle.
+     setTimeout: will display toast as long as your not touching another circle.
+     toartr.function(): will display the circles specfic toast message for that circle.
+
+    */
+    function blackMouse(){
+      toastr.remove();
+     toastr.options.positionClass = 'toast-position-BlackBerry';
+      time=setTimeout(function ( ){
+      toastr.BlackBerry('Market Share: '+(dataBerry*100).toPrecision(5)+'%', 'OS: '+ data[3].OS);
+      },2000);
+    }
+/*
+     This function uses existing code that i have edited and use differently in my own way.
+
+     remove(): remove and previous toasts that are displayed
+     position: is function that position toast message to a specfic circle.
+     setTimeout: will display toast as long as your not touching another circle.
+     toartr.function(): will display the circles specfic toast message for that circle.
+
+    */
+    function sonyMouse() {
+      toastr.remove();
+     toastr.options.positionClass = 'toast-position-Sony';
+      time=setTimeout(function ( ){
+      toastr.Sony('Market Share: '+(dataSony*100).toPrecision(5)+'%', 'OS: '+ data[4].OS);
+      },2000);
+    }
+
+
+/*
+     This function uses existing code that i have edited and use differently in my own way.
+
+     remove(): remove and previous toasts that are displayed
+     position: is function that position toast message to a specfic circle.
+     setTimeout: will display toast as long as your not touching another circle.
+     toartr.function(): will display the circles specfic toast message for that circle.
+
+    */
+    function samMouse () {
+      toastr.remove();
+     toastr.options.positionClass = 'toast-position-Samsung';
+      time=setTimeout(function ( ){
+      toastr.Samsung('Market Share: '+(dataSam*100).toPrecision(5)+'%', 'OS: '+ data[5].OS);
+      },2000);
+    }
+
+
+/*
+     This function uses existing code that i have edited and use differently in my own way.
+
+     remove(): remove and previous toasts that are displayed
+     position: is function that position toast message to a specfic circle.
+     setTimeout: will display toast as long as your not touching another circle.
+     toartr.function(): will display the circles specfic toast message for that circle.
+
+    */
+    function unkMouse() {
+       toastr.remove();
+     toastr.options.positionClass = 'toast-position-Unknown';
+      time=setTimeout(function ( ){
+      toastr.Unknown('Market Share: '+(dataUnk*100).toPrecision(5)+'%', 'OS: '+ data[6].OS);
+      },2000);
+    }
+
+/*
+     This function uses existing code that i have edited and use differently in my own way.
+
+     remove(): remove and previous toasts that are displayed
+     position: is function that position toast message to a specfic circle.
+     setTimeout: will display toast as long as your not touching another circle.
+     toartr.function(): will display the circles specfic toast message for that circle.
+
+    */
+    function othMouse(){
+       toastr.remove();
+     toastr.options.positionClass = 'toast-position-Other';
+      time=setTimeout(function ( ){
+      toastr.Other('Market Share: '+(dataOth*100).toPrecision(5)+'%', 'OS: '+ data[7].OS);
+      },2000);
+    }
+
+/*
+     This function uses existing code that i have edited and use differently in my own way.
+
+     remove(): remove and previous toasts that are displayed
+     position: is function that position toast message to a specfic circle.
+     setTimeout: will display toast as long as your not touching another circle.
+     toartr.function(): will display the circles specfic toast message for that circle.
+
+    */
+    function playMouse (){
+      toastr.remove();
+     toastr.options.positionClass = 'toast-position-PlayStation';
+      time=setTimeout(function ( ){
+      toastr.PlayStation('Market Share: '+(dataPlay*100).toPrecision(5)+'%', 'OS: '+ data[8].OS);
+      },2000);
+    }
+    
+
+   
+    
+/*
+     
+    This will clear the toast message
+    */
+  function MouseOut() {
+    
+    clearTimeout(time);
+  }
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//Section 7 selecting the circles and displaying toast message
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*
+This function has some existting code that I edited  in my own way
+
+This function selects the IOS Circle and highlights it will black stroke and fades the other circles
+This function also display the toast message too.
+*/
+   function IOS(){
+      
+        
+
+          toastr.remove();
+          toastr.options.positionClass = 'toast-position-IOS';
+        
+          d3.select("#iosCircle").style("stroke","black").style("stroke-width", 3).style("fill", "gray");
+          d3.select("#andCircle").style("stroke","white").style("stroke-width", 0).style("fill","lightgreen");
+          d3.select("#symCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5D0A9");
+          d3.select("#berryCircle").style("stroke","white").style("stroke-width", 0).style("fill","#A4A4A4");
+          d3.select("#sonyCircle").style("stroke","white").style("stroke-width", 0).style("fill","#D0A9F5");
+          d3.select("#samCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5A9F2");
+          d3.select("#unkCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5A9A9");
+          d3.select("#othCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5A9A9");
+          d3.select("#playCircle").style("stroke","white").style("stroke-width", 0).style("fill","#A9A9F5");
+          toastr.IOS('Market Share: '+(dataIOS*100).toPrecision(5)+'%', 'OS: '+ data[0].OS);
+          
+
+         }
+
+/*
+This function has some existing code that I edited  in my own way
+
+This function selects the Android Circle and highlights it will black stroke and fades the other circles
+This function also display the toast message too.
+*/
+   function Android(){
+      toastr.remove();
+      toastr.options.positionClass = 'toast-position-Android';
+
+    d3.select("#andCircle").style("stroke","black").style("stroke-width", 3).style("fill", "green");
+    d3.select("#iosCircle").style("stroke","white").style("stroke-width", 0).style("fill","lightgray");
+    d3.select("#symCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5D0A9");
+    d3.select("#berryCircle").style("stroke","white").style("stroke-width", 0).style("fill","#A4A4A4");
+          d3.select("#sonyCircle").style("stroke","white").style("stroke-width", 0).style("fill","#D0A9F5");
+          d3.select("#samCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5A9F2");
+          d3.select("#unkCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5A9A9");
+          d3.select("#othCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5A9A9");
+          d3.select("#playCircle").style("stroke","white").style("stroke-width", 0).style("fill","#A9A9F5");
+    toastr.Android('Market Share: '+(dataAnd*100).toPrecision(5)+'%', 'OS: '+ data[1].OS);
+   
+   }
+
+/*
+This function has some existing code that I edited  in my own way
+
+This function selects the Symbian Circle and highlights it will black stroke and fades the other circles
+This function also display the toast message too.
+*/
+   function Symbian(){
+     toastr.remove();
+     toastr.options.positionClass = 'toast-position-Symbian';
+      d3.select("#symCircle").style("stroke","black").style("stroke-width", 3).style("fill", "orange");
+      d3.select("#iosCircle").style("stroke","white").style("stroke-width", 0).style("fill","lightgray");
+      d3.select("#andCircle").style("stroke","white").style("stroke-width", 0).style("fill","lightgreen");
+      d3.select("#berryCircle").style("stroke","white").style("stroke-width", 0).style("fill","#A4A4A4");
+          d3.select("#sonyCircle").style("stroke","white").style("stroke-width", 0).style("fill","#D0A9F5");
+          d3.select("#samCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5A9F2");
+          d3.select("#unkCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5A9A9");
+          d3.select("#othCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5A9A9");
+          d3.select("#playCircle").style("stroke","white").style("stroke-width", 0).style("fill","#A9A9F5");
+      toastr.Symbian('Market Share: '+(dataSym*100).toPrecision(5)+'%', 'OS: '+ data[2].OS);
+   }
+
+/*
+This function has some existing code that I edited  in my own way
+
+This function selects the Blackberry Circle and highlights it will black stroke and fades the other circles
+This function also display the toast message too.
+*/
+   function BlackBerry(){
+     toastr.remove();
+     toastr.options.positionClass = 'toast-position-BlackBerry';
+    d3.select("#berryCircle").style("stroke","black").style("stroke-width", 3).style("fill", "black");
+          d3.select("#iosCircle").style("stroke","white").style("stroke-width", 0).style("fill","lightgray");
+          d3.select("#andCircle").style("stroke","white").style("stroke-width", 0).style("fill","lightgreen");
+          d3.select("#sonyCircle").style("stroke","white").style("stroke-width", 0).style("fill","#D0A9F5");
+          d3.select("#symCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5D0A9");
+          d3.select("#samCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5A9F2");
+          d3.select("#unkCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5A9A9");
+          d3.select("#othCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5A9A9");
+          d3.select("#playCircle").style("stroke","white").style("stroke-width", 0).style("fill","#A9A9F5");
+          toastr.BlackBerry('Market Share: '+(dataBerry*100).toPrecision(5)+'%', 'OS: '+ data[3].OS);
+   }
+
+/*
+This function has some existing code that I edited  in my own way
+
+This function selects the Sony Circle and highlights it will black stroke and fades the other circles
+This function also display the toast message too.
+*/
+   function Sony() {
+     toastr.remove();
+     toastr.options.positionClass = 'toast-position-Sony';
+          d3.select("#sonyCircle").style("stroke","black").style("stroke-width", 3).style("fill", "purple");
+          d3.select("#iosCircle").style("stroke","white").style("stroke-width", 0).style("fill","lightgray");
+          d3.select("#andCircle").style("stroke","white").style("stroke-width", 0).style("fill","lightgreen");
+          d3.select("#symCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5D0A9");
+          d3.select("#samCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5A9F2");
+          d3.select("#unkCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5A9A9");
+          d3.select("#othCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5A9A9");
+          d3.select("#playCircle").style("stroke","white").style("stroke-width", 0).style("fill","#A9A9F5");
+          d3.select("#berryCircle").style("stroke","white").style("stroke-width", 0).style("fill","#A4A4A4");
+          toastr.Sony('Market Share: '+(dataSony*100).toPrecision(5)+'%', 'OS: '+ data[4].OS);
+   }
+   
+
+/*
+This function has some existing code that I edited  in my own way
+
+This function selects the Samsung Circle and highlights it will black stroke and fades the other circles
+This function also display the toast message too.
+*/
+   function Samsung(){
+     toastr.remove();
+     toastr.options.positionClass = 'toast-position-Samsung';
+          d3.select("#samCircle").style("stroke","black").style("stroke-width", 3).style("fill", "#FF00FF");
+          d3.select("#iosCircle").style("stroke","white").style("stroke-width", 0).style("fill","lightgray");
+          d3.select("#andCircle").style("stroke","white").style("stroke-width", 0).style("fill","lightgreen");
+          d3.select("#symCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5D0A9");
+          d3.select("#unkCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5A9A9");
+          d3.select("#othCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5A9A9");
+          d3.select("#playCircle").style("stroke","white").style("stroke-width", 0).style("fill","#A9A9F5");
+          d3.select("#berryCircle").style("stroke","white").style("stroke-width", 0).style("fill","#A4A4A4");
+          d3.select("#sonyCircle").style("stroke","white").style("stroke-width", 0).style("fill","#D0A9F5");
+          toastr.Samsung('Market Share: '+(dataSam*100).toPrecision(5)+'%', 'OS: '+ data[5].OS);
+   }
+
+/*
+This function has some existing code that I edited  in my own way
+
+This function selects the Unknown Circle and highlights it will black stroke and fades the other circles
+This function also display the toast message too.
+*/
+  function Unknown(){
+     toastr.remove();
+     toastr.options.positionClass = 'toast-position-Unknown';
+          d3.select("#unkCircle").style("stroke","black").style("stroke-width", 3).style("fill", "red");
+          d3.select("#iosCircle").style("stroke","white").style("stroke-width", 0).style("fill","lightgray");
+          d3.select("#andCircle").style("stroke","white").style("stroke-width", 0).style("fill","lightgreen");
+          d3.select("#symCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5D0A9");
+          d3.select("#othCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5A9A9");
+          d3.select("#playCircle").style("stroke","white").style("stroke-width", 0).style("fill","#A9A9F5");
+          d3.select("#berryCircle").style("stroke","white").style("stroke-width", 0).style("fill","#A4A4A4");
+          d3.select("#sonyCircle").style("stroke","white").style("stroke-width", 0).style("fill","#D0A9F5");
+          d3.select("#samCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5A9F2");
+          toastr.Unknown('Market Share: '+(dataUnk*100).toPrecision(5)+'%', 'OS: '+ data[6].OS);
+  }
+  /*
+This function has some existing code that I edited  in my own way
+
+This function selects the Other Circle and highlights it will black stroke and fades the other circles
+This function also display the toast message too.
+*/
+  function other() {
+     toastr.remove();
+     toastr.options.positionClass = 'toast-position-Other';
+
+          d3.select("#othCircle").style("stroke","black").style("stroke-width", 3).style("fill", "brown");
+          d3.select("#iosCircle").style("stroke","white").style("stroke-width", 0).style("fill","lightgray");
+          d3.select("#andCircle").style("stroke","white").style("stroke-width", 0).style("fill","lightgreen");
+          d3.select("#symCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5D0A9");
+          d3.select("#playCircle").style("stroke","white").style("stroke-width", 0).style("fill","#A9A9F5");
+          d3.select("#berryCircle").style("stroke","white").style("stroke-width", 0).style("fill","#A4A4A4");
+          d3.select("#sonyCircle").style("stroke","white").style("stroke-width", 0).style("fill","#D0A9F5");
+          d3.select("#samCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5A9F2");
+          d3.select("#unkCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5A9A9");
+          toastr.Other('Market Share: '+(dataOth*100).toPrecision(5)+'%', 'OS: '+ data[7].OS);
+  }
+
+ /*
+This function has some existing code that I edited  in my own way
+
+This function selects the PlayStation Circle and highlights it will black stroke and fades the other circles
+This function also display the toast message too.
+*/
+  function PlayStation () {
+     toastr.remove();
+     toastr.options.positionClass = 'toast-position-PlayStation';
+
+          d3.select("#playCircle").style("stroke","black").style("stroke-width", 3).style("fill", "blue");
+          d3.select("#iosCircle").style("stroke","white").style("stroke-width", 0).style("fill","lightgray");
+          d3.select("#andCircle").style("stroke","white").style("stroke-width", 0).style("fill","lightgreen");
+          d3.select("#symCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5D0A9");
+          d3.select("#berryCircle").style("stroke","white").style("stroke-width", 0).style("fill","#A4A4A4");
+          d3.select("#sonyCircle").style("stroke","white").style("stroke-width", 0).style("fill","#D0A9F5");
+          d3.select("#samCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5A9F2");
+          d3.select("#unkCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5A9A9");
+          d3.select("#othCircle").style("stroke","white").style("stroke-width", 0).style("fill","#F5A9A9");
+          toastr.PlayStation('Market Share: '+(dataPlay*100).toPrecision(5)+'%', 'OS: '+ data[8].OS);
+
+  }
+  /*
+
+
+This function reset all the circles to it normal state in the beginnning
+*/
+
+   function ResetCircles(){
+    d3.select("#iosCircle").style("stroke","white").style("stroke-width", 0).style("fill", "gray");
+    d3.select("#andCircle").style("stroke","white").style("stroke-width", 0).style("fill", "green");
+    d3.select("#symCircle").style("stroke","white").style("stroke-width", 0).style("fill", "orange");
+    d3.select("#berryCircle").style("stroke","white").style("stroke-width", 0).style("fill","black");
+          d3.select("#sonyCircle").style("stroke","white").style("stroke-width", 0).style("fill","purple");
+          d3.select("#samCircle").style("stroke","white").style("stroke-width", 0).style("fill","#FF00FF");
+          d3.select("#unkCircle").style("stroke","white").style("stroke-width", 0).style("fill","red");
+          d3.select("#othCircle").style("stroke","white").style("stroke-width", 0).style("fill","brown");
+          d3.select("#playCircle").style("stroke","white").style("stroke-width", 0).style("fill","blue");
+   }
+
+ 
+</script>
+</div>
+</body>
+</html>
